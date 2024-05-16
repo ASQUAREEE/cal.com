@@ -6,6 +6,7 @@ import useClientSchedule from "../../hooks/useClientSchedule";
 import useDeleteSchedule from "../../hooks/useDeleteSchedule";
 import { useMe } from "../../hooks/useMe";
 import useUpdateSchedule from "../../hooks/useUpdateSchedule";
+import { AtomsWrapper } from "../../src/components/atoms-wrapper";
 import { useToast } from "../../src/components/ui/use-toast";
 import type { Schedule } from "../AvailabilitySettings";
 import type { CustomClassNames } from "../AvailabilitySettings";
@@ -22,6 +23,7 @@ type PlatformAvailabilitySettingsWrapperProps = {
   onUpdateError?: (err: ApiErrorResponse) => void;
   onDeleteSuccess?: (res: ApiResponse) => void;
   onDeleteError?: (err: ApiErrorResponse) => void;
+  disableEditableHeading?: boolean;
 };
 
 export const PlatformAvailabilitySettingsWrapper = ({
@@ -31,6 +33,7 @@ export const PlatformAvailabilitySettingsWrapper = ({
   onDeleteSuccess,
   onUpdateError,
   onUpdateSuccess,
+  disableEditableHeading = false,
 }: PlatformAvailabilitySettingsWrapperProps) => {
   const { isLoading, data: schedule } = useClientSchedule(id);
   const mySchedule = schedule as ApiSuccessResponse<ScheduleWithAvailabilitiesForWeb>;
@@ -88,43 +91,42 @@ export const PlatformAvailabilitySettingsWrapper = ({
   if (!userSchedule) return <div className="px-10 py-4 text-xl">No user schedule present</div>;
 
   return (
-    <AvailabilitySettings
-      handleDelete={() => {
-        userSchedule.id && handleDelete(userSchedule.id);
-      }}
-      handleSubmit={async (data) => {
-        userSchedule.id && handleUpdate(userSchedule.id, data);
-      }}
-      weekStart="Sunday"
-      timeFormat={timeFormat}
-      isLoading={isLoading}
-      schedule={
-        userSchedule
-          ? {
-              name: userSchedule.name,
-              id: userSchedule.id,
-              isLastSchedule: userSchedule.isLastSchedule,
-              isDefault: userSchedule.isDefault,
-              workingHours: userSchedule.workingHours,
-              dateOverrides: userSchedule.dateOverrides,
-              timeZone: userSchedule.timeZone,
-              availability: userSchedule.availability,
-              schedule:
-                userSchedule.schedule.reduce(
-                  (acc: Schedule[], avail: Schedule) => [
-                    ...acc,
-                    { ...avail, startTime: new Date(avail.startTime), endTime: new Date(avail.endTime) },
-                  ],
-                  [] as Schedule[]
-                ) || [],
-            }
-          : undefined
-      }
-      isDeleting={isDeletionInProgress}
-      isSaving={isSavingInProgress}
-      backPath=""
-      isPlatform={true}
-      customClassNames={customClassNames}
-    />
+    <AtomsWrapper>
+      <AvailabilitySettings
+        disableEditableHeading={disableEditableHeading}
+        handleDelete={() => {
+          userSchedule.id && handleDelete(userSchedule.id);
+        }}
+        handleSubmit={async (data) => {
+          userSchedule.id && handleUpdate(userSchedule.id, data);
+        }}
+        weekStart="Sunday"
+        timeFormat={timeFormat}
+        isLoading={isLoading}
+        schedule={{
+          name: userSchedule.name,
+          id: userSchedule.id,
+          isLastSchedule: userSchedule.isLastSchedule,
+          isDefault: userSchedule.isDefault,
+          workingHours: userSchedule.workingHours,
+          dateOverrides: userSchedule.dateOverrides,
+          timeZone: userSchedule.timeZone,
+          availability: userSchedule.availability,
+          schedule:
+            userSchedule.schedule.reduce(
+              (acc: Schedule[], avail: Schedule) => [
+                ...acc,
+                { ...avail, startTime: new Date(avail.startTime), endTime: new Date(avail.endTime) },
+              ],
+              [] as Schedule[]
+            ) || [],
+        }}
+        isDeleting={isDeletionInProgress}
+        isSaving={isSavingInProgress}
+        backPath=""
+        isPlatform={true}
+        customClassNames={customClassNames}
+      />
+    </AtomsWrapper>
   );
 };
